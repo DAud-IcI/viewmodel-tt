@@ -3,9 +3,9 @@ XML &amp; T4 Template based generor for .Net ViewModels that implement INotifyPr
 
 ## Installation and usage
 
-1. Download the [ViewModel.tt](ViewModel.tt) file into your project.
-2. Create a [ViewModel.xml](ViewModel.xml) file in the same directory or download the example in this repository.
-3. (Optional) Download the [ViewModel.xsd](ViewModel.xsd) file as well and [reference it](https://msdn.microsoft.com/en-us/library/ms757863(v=vs.85).aspx) in the XML file to get IntelliSense completion and tooltips.
+1. Download the [ViewModel.tt](https://raw.githubusercontent.com/DAud-IcI/viewmodel-tt/master/ViewModel.tt) file into your project.
+2. Create a [ViewModel.xml](https://raw.githubusercontent.com/DAud-IcI/viewmodel-tt/master/ViewModel.xml) file in the same directory or download the example in this repository.
+3. (Optional) Download the [ViewModel.xsd](https://raw.githubusercontent.com/DAud-IcI/viewmodel-tt/master/ViewModel.xsd) file as well and [reference it](https://msdn.microsoft.com/en-us/library/ms757863.aspx) in the XML file to get IntelliSense completion and tooltips.
 4. Edit the XML file, then save the TT file to generate your classes.
 5. Add the generated C# files to the project.
 
