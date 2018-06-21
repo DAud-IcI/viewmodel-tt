@@ -1,0 +1,30 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+
+<!-- sample file generating two ViewModels -->
+<viewmodels xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="ViewModel.xsd">
+  <!-- A view-model can override the default namespace specified above, but don't have to. -->
+  <viewmodel name="Person">
+    <property type="string" name="FirstName" />
+    <property type="string" name="LastName" />
+    <!-- You can give the name property either as attribute or node value. -->
+    <property type="DateTime">Birthday</property>
+    <!-- In getters (read-only properties) you can give the logic as a single Func<T> lambda expression in the method attribute or the node value.  -->
+    <getter type="int" name="Age" notifier="Birthday">(int)((DateTime.Now - Birthday).TotalDays / 356.25)</getter>
+    <!-- Creates an empty constructor. -->
+    <constructor />
+    <!-- Creates a constructor with FirstName and LastName as arguments. -->
+    <constructor parameters="FirstName, LastName">
+        this.Birthday = DateTime.Now;
+    </constructor>
+    <!-- Creates a constructor with all properties as arguments. -->
+    <constructor parameters="*" />
+  </viewmodel>
+  <!-- Minimalist VM declaration with type property omitted where it's the default (string) and only the default constructor is used. -->
+  <!-- <viewmodel name="Location" namespace="custom"> -->
+  <viewmodel name="Location">
+    <property>Country</property>
+    <property type="int">ZipCode</property>
+    <property>City</property>
+    <property>Address</property>
+  </viewmodel>
+</viewmodels>

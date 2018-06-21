@@ -1,0 +1,170 @@
+﻿<#@ template debug="false" hostspecific="true" language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ assembly name="System.Xml" #>
+<#@ assembly name="System.Xml.Linq" #>
+<#@ import namespace="System" #>
+<#@ import namespace="System.IO" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Xml" #>
+<#@ import namespace="System.Xml.Linq" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ output extension=".cs" #>
+<#
+foreach(var vm in doc.Root.Descendants("viewmodel"))
+{
+  var vmp = new ViewModelParser(default_namespace, vm);
+  #>
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+
+namespace <#= vmp.NameSpace #>
+{
+    public partial class <#= vmp.Name #> : INotifyPropertyChanged 
+    {
+        public event PropertyChangedEventHandler PropertyChanged;
+<#
+  foreach(var p in vmp.Properties)
+  {
+#>
+        <#= p.Type #> _<#= p.Name #>;
+        public <#= p.Type #> <#= p.Name #> { get { return _<#= p.Name #>; } set { if (value == _<#= p.Name #>) return;<#= String.Join("", p.UpdateTargets.Select(x => x.EventInvoker)) #> } }
+<#
+  }
+
+  foreach(var g in vmp.Getters)
+  {
+#>
+        public <#= g.Type #> <#= g.Name #> { get => <#= g.Method #>; }
+<#
+  }
+
+  foreach(var c in vmp.Constructors)
+  {
+#>
+        public <#= vmp.Name #>(<#= String.Join(", ", c.Parameters.Select(p =>  p.Type + " " + p.Name)) #>)
+        {
+<#
+    foreach(var p in c.Parameters)
+    {
+#>
+            this.<#= p.Name #> = <#= p.Name #>;
+<#
+    }
+    if (!String.IsNullOrWhiteSpace(c.Method))
+    {
+#>
+            <#= c.Method.Trim() #>
+<#  } #>
+        }
+<#
+  }
+#>
+    }
+}
+<#
+  Save(vmp.Name + ".cs");
+}
+#>
+
+<#+
+class PropertyBase
+{
+  public string Type { get; set; }
+  public string Name { get; set; }
+  public static T Load<T>(T self, XElement x) where T : PropertyBase
+  {
+    self.Type = x.Attribute("type")?.Value ?? "string";
+    self.Name = x.Attribute("name")?.Value ?? x.Value.Trim();
+    return self;
+  }
+  public string EventInvoker { get => String.Format(" PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof({0})));", this.Name); }
+}
+class Property : PropertyBase
+{
+  public List<PropertyBase> UpdateTargets { get; set; } = new List<PropertyBase>();
+  public Property AddSelf() { this.UpdateTargets.Add(this); return this; }
+}
+class Getter : PropertyBase
+{
+  public string Method { get; set; }
+}
+class Constructor
+{
+  public List<Property> Parameters { get; set; } = new List<Property>();
+  public string Method { get; set; } = "";
+  public Constructor(List<Property> properties, string parameters)
+  {
+    if (String.IsNullOrWhiteSpace(parameters))
+      return;
+    if (parameters.Trim() == "*")
+    { Parameters = properties; return; }
+    
+    foreach(var p in StringToList(parameters))
+      Parameters.Add(properties.Single(x => x.Name == p));
+  }
+}
+
+class ViewModelParser
+{
+  public string NameSpace { get; set; }
+  public string Name { get; set; }
+
+  public List<Property> Properties { get; set; }
+  public List<Getter> Getters { get; set; } = new List<Getter>();
+  public List<Constructor> Constructors { get; set; }
+
+  public ViewModelParser(string default_namespace, XElement e)
+  {
+    NameSpace = e.Attribute("namespace")?.Value.Trim() ?? default_namespace;
+    Name = e.Attribute("name").Value.Trim();
+
+    Properties = e.Descendants("property")
+      .Select(x => PropertyBase.Load(new Property(), x).AddSelf())
+      .ToList();
+    
+    foreach(var x in e.Descendants("getter"))
+    {
+      var g = new Getter() { Method = x.Attribute("method")?.Value ?? x.Value };
+      PropertyBase.Load(g, x);
+      List<string> notifier = StringToList(x.Attribute("notifier")?.Value);
+      foreach(var n in notifier)
+      {
+        var property = Properties.SingleOrDefault(p => p.Name == n);
+        if (property != null)
+          property.UpdateTargets.Add(g);
+      }
+      this.Getters.Add(g);
+    }
+
+    Constructors = e.Descendants("constructor")
+      .Select(x => new Constructor(Properties, x.Attribute("parameters")?.Value)
+            { Method = (x.Value ?? String.Empty).Trim() })
+      .ToList();
+    if (Constructors.Count == 0)
+      Constructors.Add(new Constructor(null, null));
+  }
+}
+
+XDocument _doc = null;
+XDocument doc { get { if(_doc == null) _doc = XDocument.Load(Host.TemplateFile.Substring(0, Host.TemplateFile.Length - 2) + "xml"); return _doc;  } }
+string default_namespace { get => doc.Root.Attribute("namespace")?.Value ?? System.Runtime.Remoting.Messaging.CallContext.LogicalGetData("NamespaceHint").ToString(); }
+
+static List<string> StringToList(string self, string sep = ",") =>
+  self == null ? new List<string>() :
+  self.Split(new[]{ sep }, StringSplitOptions.RemoveEmptyEntries)
+  .Select(x => x.Trim())
+  .Where(x => !String.IsNullOrWhiteSpace(x))
+  .ToList();
+
+string GetPath(string local_file)
+{ return Path.Combine(Path.GetDirectoryName(Host.TemplateFile), local_file); }
+
+void Save(string local_file)
+{
+  string path = GetPath(local_file);
+  File.WriteAllText(path, this.GenerationEnvironment.ToString());
+  this.GenerationEnvironment.Remove(0, this.GenerationEnvironment.Length);
+}
+#>

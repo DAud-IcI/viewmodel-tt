@@ -1,0 +1,152 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+    <xs:element name="viewmodels">
+        <xs:annotation>
+            <xs:documentation>
+                Root element that contains all ViewModel definitions. May contain a
+                namespace attribute that overrides the default suggestion based on the
+                file's location in the solution.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="viewmodel" minOccurs="1" maxOccurs="unbounded">
+                    <xs:annotation>
+                        <xs:documentation>
+                            A ViewModel definition. Must have a name attribute,
+                            may have a namespace attribute that overrides the default
+                            suggestion or the root namespace declaration.
+                        </xs:documentation>
+                    </xs:annotation>
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="property" minOccurs="1" maxOccurs="unbounded">
+                                <xs:annotation>
+                                    <xs:documentation>
+                                        Defines a notifying full property.
+                                    </xs:documentation>
+                                </xs:annotation>
+                                <xs:complexType>
+                                    <xs:simpleContent>
+                                        <xs:extension base="xs:string">
+                                            <xs:attribute name="type">
+                                                <xs:annotation>
+                                                    <xs:documentation>
+                                                        The Type of the property.
+                                                        The default is string.
+                                                    </xs:documentation>
+                                                </xs:annotation>
+                                            </xs:attribute>
+                                            <xs:attribute name="name">
+                                                <xs:annotation>
+                                                    <xs:documentation>
+                                                        The name of the property, it can also
+                                                        be defined in the element's text content.
+                                                    </xs:documentation>
+                                                </xs:annotation>
+                                            </xs:attribute>
+                                        </xs:extension>
+                                    </xs:simpleContent>
+                                </xs:complexType>
+                            </xs:element>
+                            <xs:element name="getter" minOccurs="0" maxOccurs="unbounded">
+                                <xs:annotation>
+                                    <xs:documentation>
+                                        Defines a read-only property that may be updated by
+                                        a full property. Element content is the lambda style
+                                        expression used in the getter.
+                                    </xs:documentation>
+                                </xs:annotation>
+                                <xs:complexType>
+                                    <xs:simpleContent>
+                                        <xs:extension base="xs:string">
+                                            <xs:attribute name="type">
+                                                <xs:annotation>
+                                                    <xs:documentation>
+                                                        The Type of the getter.
+                                                        The default is string.
+                                                    </xs:documentation>
+                                                </xs:annotation>
+                                            </xs:attribute>
+                                            <xs:attribute name="name" use="required">
+                                                <xs:annotation>
+                                                    <xs:documentation>
+                                                        The name of the getter.
+                                                    </xs:documentation>
+                                                </xs:annotation>
+                                            </xs:attribute>
+                                            <xs:attribute name="notifier">
+                                                <xs:annotation>
+                                                    <xs:documentation>
+                                                        The name of the full property that acts
+                                                        as its notification "parent" and calls
+                                                        PropertyChanged on the getter's behalf.
+                                                    </xs:documentation>
+                                                </xs:annotation>
+                                            </xs:attribute>
+                                            <xs:attribute name="method">
+                                                <xs:annotation>
+                                                    <xs:documentation>
+                                                        The expression used to get the value.
+                                                        May be specified in the element content
+                                                        instead.
+                                                    </xs:documentation>
+                                                </xs:annotation>
+                                            </xs:attribute>
+                                        </xs:extension>
+                                    </xs:simpleContent>
+                                </xs:complexType>
+                            </xs:element>
+                            <xs:element name="constructor" minOccurs="0" maxOccurs="unbounded">
+                                <xs:annotation>
+                                    <xs:documentation>
+                                        Defines a constructor for this type. If parameters is
+                                        omitted it will generate the default constructor.
+                                    </xs:documentation>
+                                </xs:annotation>
+                                <xs:complexType>
+                                    <xs:simpleContent>
+                                        <xs:extension base="xs:string">
+                                            <xs:attribute name="parameters">
+                                                <xs:annotation>
+                                                    <xs:documentation>
+                                                        The expression used to get the value.
+                                                        May be specified in the element content
+                                                        instead.
+                                                    </xs:documentation>
+                                                </xs:annotation>
+                                            </xs:attribute>
+                                        </xs:extension>
+                                    </xs:simpleContent>
+                                </xs:complexType>
+                            </xs:element>
+                        </xs:sequence>
+                        <xs:attribute name="name">
+                            <xs:annotation>
+                                <xs:documentation>
+                                    The class name of the new ViewModel.
+                                </xs:documentation>
+                            </xs:annotation>
+                        </xs:attribute>
+                        <xs:attribute name="namespace">
+                            <xs:annotation>
+                                <xs:documentation>
+                                    Optional namespace attribute that overrides the default
+                                    suggestion and the root namespace attribute.
+                                </xs:documentation>
+                            </xs:annotation>
+                        </xs:attribute>
+                    </xs:complexType>
+                </xs:element>
+            </xs:sequence>
+            <xs:attribute name="namespace">
+                <xs:annotation>
+                    <xs:documentation>
+                        Optional namespace attribute that overrides the default suggestion
+                        (that's based on the file's location in the solution).
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+        </xs:complexType>
+    </xs:element>
+</xs:schema>
